@@ -1,0 +1,55 @@
+
+%Declaring the control input, for linear feedback control
+control_input = -K*[x1; x2; x3; x4; x5; x6];
+f1_sub = simplify(vpa(subs(f1, [F l1 l2 M m1 m2 g],[ control_input 20 10 1000 100 100 9.8])));
+f2_sub = simplify(vpa(subs(f2, [F l1 l2 M m1 m2 g],[ control_input 20 10 1000 100 100 9.8])));
+f3_sub = simplify(vpa(subs(f3, [F l1 l2 M m1 m2 g],[ control_input 20 10 1000 100 100 9.8])));
+%assuming that the oscillations are really small.
+%f1_sub1 = subs(f1_sub,[sin(x5) cos(x5) sin(x6) cos(x6)],[ x5 1 x6 1]);
+%f2_sub1 = subs(f2_sub,[sin(x5) cos(x5) sin(x6) cos(x6)],[ x5 1 x6 1]);
+%f3_sub1 = subs(f3_sub,[sin(x5) cos(x5) sin(x6) cos(x6)],[ x5 1 x6 1]);
+ syms x1t(t) x2t(t) x3t(t) x4t(t) x5t(t) x6t(t) real
+ f1_sub1_t = subs(f1_sub,[ x1 x2 x3 x4 x5 x6],[x1t x2t x3t x4t x5t x6t]);
+ f2_sub1_t = subs(f2_sub,[ x1 x2 x3 x4 x5 x6],[x1t x2t x3t x4t x5t x6t]);
+ f3_sub1_t = subs(f3_sub,[ x1 x2 x3 x4 x5 x6],[x1t x2t x3t x4t x5t x6t]);
+ state_vec = [x1t; x2t; x3t; x4t; x5t; x6t];
+ diff_eqn1 = diff(x1t,t,1)==  f1_sub1_t;
+ diff_eqn2 = diff(x2t,t,1)== f2_sub1_t;
+ diff_eqn3 = diff(x3t,t,1) == f3_sub1_t;
+ diff_eqn4= diff(x4t,t,1) == x1t;
+ diff_eqn5 = diff(x5t,t,1) == x2t;
+ diff_eqn6 = diff(x6t,t,1) == x3t;
+ eqns = [ diff_eqn1; diff_eqn2; diff_eqn3; diff_eqn4; diff_eqn5; diff_eqn6];
+ 
+[M1,F1] = massMatrixForm(eqns,state_vec);
+f = M1\F1;
+ode_fun = odeFunction(f,state_vec);
+[t,x_out] = ode45(ode_fun,[0 sim_time],x_init);
+figure;
+hold on;
+title('States for non-linear system')
+plot(t,x_out(:,1));
+plot(t,x_out(:,2));
+plot(t,x_out(:,3));
+legend('Cart-position(non-linear)','Pendulum1(non-linear)','Pendulum2(non-linear)')
+
+% % For the phase-plots(position)
+% hold on
+% title('Phase-plot for position and velocity')
+% xout_t=x_out';
+% plot(xout_t(1,:),xout_t(4,:),'b');
+% 
+% % For the phase-plot(theta1)
+% figure
+% hold on
+% title('Phase-plot for theta1 and theta1dot')
+% xout_t=x_out';
+% plot(xout_t(2,:),xout_t(5,:),'b');
+% 
+% % For the phase-plot(theta2)
+% figure
+% hold on
+% title('Phase-plot for theta2 and theta2dot')
+% xout_t=x_out';
+% plot(xout_t(3,:),xout_t(6,:),'b');
+
